@@ -1,0 +1,271 @@
+.dart';
+
+void main() {
+  runApp(const WhatsAppJwad());
+}
+
+class WhatsAppJwad extends StatelessWidget {
+  const WhatsAppJwad({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'واتساب jwad',
+      debugShowCheckedModeBanner: false,
+      theme: ThemeData(
+        // الألوان الرسمية للواتساب بإصدارها الداكن المحبوب
+        primaryColor: const Color(0xFF075E54),
+        scaffoldBackgroundColor: const Color(0xFF121B22),
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: const Color(0xFF075E54),
+          background: const Color(0xFF121B22),
+        ),
+      ),
+      // البداية ستكون من شاشة تسجيل الدخول برقم الهاتف
+      home: const LoginScreen(),
+    );
+  }
+}
+
+// 1. شاشة تسجيل الدخول برقم الهاتف
+class LoginScreen extends StatefulWidget {
+  const LoginScreen({super.key});
+
+  @override
+  State<LoginScreen> createState() => _LoginScreenState();
+}
+
+class _LoginScreenState extends State<LoginScreen> {
+  final TextEditingController _phoneController = TextEditingController();
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Padding(
+        padding: const EdgeInsets.all(24.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            const Icon(Icons.chat_bubble, size: 80, color: Color(0xFF25D366)),
+            const SizedBox(height: 20),
+            const Text(
+              'مرحباً بك في واتساب jwad',
+              style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 10),
+            const Text(
+              'أدخل رقم هاتفك للتواصل مع مستخدمي الواتساب الأصلي',
+              textAlign: TextAlign.center,
+              style: TextStyle(color: Colors.grey, fontSize: 14),
+            ),
+            const SizedBox(height: 40),
+            // حقل إدخال رقم الهاتف
+            TextField(
+              controller: _phoneController,
+              keyboardType: TextInputType.phone,
+              style: const TextStyle(color: Colors.white),
+              decoration: InputDecoration(
+                hintText: 'رقم الهاتف (مثال: +966...)',
+                hintStyle: const TextStyle(color: Colors.grey),
+                prefixIcon: const Icon(Icons.phone, color: Color(0xFF25D366)),
+                enabledBorder: OutlineInputBorder(
+                  borderSide: const BorderSide(color: Colors.grey),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderSide: const BorderSide(color: Color(0xFF25D366)),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+              ),
+            ),
+            const SizedBox(height: 24),
+            // زر الدخول
+            SizedBox(
+              width: double.infinity,
+              height: 50,
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF25D366),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                ),
+                onPressed: () {
+                  // الانتقال للشاشة الرئيسية عند الضغط
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(builder: (context) => const HomeScreen()),
+                  );
+                },
+                child: const Text('تسجيل الدخول', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+              ),
+            ),
+            const SizedBox(height: 40),
+            // الحقوق الخاصة بك
+            const Text(
+              'تطوير جواد',
+              style: TextStyle(color: Color(0xFF25D366), fontSize: 14, fontWeight: FontWeight.w500, letterSpacing: 1.2),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// 2. الشاشة الرئيسية للتطبيق (تشبه الواتساب الأصلي)
+class HomeScreen extends StatelessWidget {
+  const HomeScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return DefaultTabController(
+      length: 3,
+      child: Scaffold(
+        appBar: AppBar(
+          backgroundColor: const Color(0xFF1F2C34),
+          title: const Text('واتساب jwad', style: TextStyle(color: Colors.grey, fontWeight: FontWeight.bold)),
+          actions: [
+            IconButton(icon: const Icon(Icons.search, color: Colors.grey), onPressed: () {}),
+            IconButton(icon: const Icon(Icons.more_vert, color: Colors.grey), onPressed: () {}),
+          ],
+          bottom: const TabBar(
+            indicatorColor: Color(0xFF00A884),
+            labelColor: Color(0xFF00A884),
+            unselectedLabelColor: Colors.grey,
+            tabs: [
+              Tab(text: 'المحادثات'),
+              Tab(text: 'المستجدات'),
+              Tab(text: 'المكالمات'),
+            ],
+          ),
+        ),
+        body: ListView.builder(
+          itemCount: 5,
+          itemBuilder: (context, index) {
+            return ListTile(
+              leading: const CircleAvatar(
+                backgroundColor: Colors.grey,
+                child: Icon(Icons.person, color: Colors.white),
+              ),
+              title: Text('صديق الواتساب الأصلي ${index + 1}', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+              subtitle: const Text('الرسائل متصلة عبر شبكة الواتساب...', style: TextStyle(color: Colors.grey)),
+              trailing: const Text('١٢:٣٠ م', style: TextStyle(color: Colors.grey, fontSize: 12)),
+              onTap: () {
+                // فتح شاشة الشات عند الضغط على أي شخص
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => ChatScreen(name: 'صديق الواتساب الأصلي ${index + 1}')),
+                );
+              },
+            );
+          },
+        ),
+        // زر عائم أسفل الشاشة لإضافة محادثة جديدة بتصميم الواتساب
+        floatingActionButton: FloatingActionButton(
+          backgroundColor: const Color(0xFF00A884),
+          onPressed: () {},
+          child: const Icon(Icons.chat, color: Colors.white),
+        ),
+      ),
+    );
+  }
+}
+
+// 3. شاشة المحادثة (الشات)
+class ChatScreen extends StatelessWidget {
+  final String name;
+  const ChatScreen({super.key, required this.name});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        backgroundColor: const Color(0xFF1F2C34),
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(name, style: const TextStyle(color: Colors.white, fontSize: 16)),
+            const Text('متصل الآن (واتساب الأصلي)', style: TextStyle(color: Color(0xFF25D366), fontSize: 12)),
+          ],
+        ),
+        iconTheme: const IconThemeData(color: Colors.white),
+      ),
+      body: Column(
+        children: [
+          // منطقة عرض الرسائل
+          Expanded(
+            child: ListView(
+              padding: const EdgeInsets.all(16),
+              children: const [
+                ChatBubble(message: 'أهلاً بك، أنا أستخدم الواتساب الأصلي!', isMe: false),
+                ChatBubble(message: 'مرحباً، أنا أكلمك الآن من تطبيقي المخصص "واتساب jwad"!', isMe: true),
+                ChatBubble(message: 'رائع جداً! تصلني رسائلك بشكل طبيعي تماماً.', isMe: false),
+              ],
+            ),
+          ),
+          // حقل كتابة وإرسال الرسالة في الأسفل
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Container(
+                    decoration: BorderRadius.circular(25),
+                    color: const Color(0xFF1F2C34),
+                    child: const TextField(
+                      style: TextStyle(color: Colors.white),
+                      decoration: InputDecoration(
+                        hintText: 'مراسلة مستخدم الواتساب...',
+                        hintStyle: TextStyle(color: Colors.grey),
+                        border: InputBorder.none,
+                        contentPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                const CircleAvatar(
+                  backgroundColor: Color(0xFF00A884),
+                  radius: 22,
+                  child: Icon(Icons.send, color: Colors.white, size: 20),
+                )
+              ],
+            ),
+          ),
+          // جملة الحقوق تظهر بشكل خفيف في أسفل الشات أيضاً للتوثيق
+          const Padding(
+            padding: EdgeInsets.only(bottom: 4.0),
+            child: Text('تطوير جواد', style: TextStyle(color: Colors.grey, fontSize: 10)),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ودجت مخصصة لشكل فقاعة الرسائل (يمين للمرسل ويسار للمستقبل)
+class ChatBubble extends StatelessWidget {
+  final String message;
+  final bool isMe;
+
+  const ChatBubble({super.key, required this.message, required this.isMe});
+
+  @override
+  Widget build(BuildContext context) {
+    return Align(
+      alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
+      child: Container(
+        margin: const EdgeInsets.symmetric(vertical: 5),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+        decoration: BoxDecoration(
+          color: isMe ? const Color(0xFF005C4B) : const Color(0xFF1F2C34),
+          borderRadius: BorderRadius.only(
+            topLeft: const Radius.circular(12),
+            topRight: const Radius.circular(12),
+            bottomLeft: isMe ? const Radius.circular(12) : Radius.zero,
+            bottomRight: isMe ? Radius.zero : const Radius.circular(12),
+          ),
+        ),
+        child: Text(
+          message,
+          style: const TextStyle(color: Colors.white, fontSize: 15),
