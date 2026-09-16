@@ -1,0 +1,209 @@
+name: Build Android APK
+on:
+  push:
+    branches: [ main, master, jwad ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v4
+
+    - name: Set up JDK 17
+      uses: actions/setup-java@v4
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+
+    - name: Setup Flutter
+      uses: subosito/flutter-action@v2
+      with:
+        flutter-version: '3.19.0'
+        channel: 'stable'
+
+    - name: Create App with Advanced Features
+      run: |
+        flutter create --project-name wats_up_jwad my_app
+        cd my_app
+        
+        cat << 'EOF' > lib/main.dart
+        import 'package:flutter/material.dart';
+        
+        void main() {
+          runApp(const WatsUpJwad());
+        }
+        
+        class WatsUpJwad extends StatelessWidget {
+          const WatsUpJwad({super.key});
+          @override
+          Widget build(BuildContext context) {
+            return MaterialApp(
+              title: 'Wats up jwad',
+              debugShowCheckedModeBanner: false,
+              theme: ThemeData(
+                brightness: Brightness.dark,
+                primaryColor: const Color(0xFF075E54),
+                scaffoldBackgroundColor: const Color(0xFF121B22),
+                colorScheme: ColorScheme.fromSeed(
+                  seedColor: const Color(0xFF075E54),
+                  brightness: Brightness.dark,
+                  background: const Color(0xFF121B22),
+                ),
+              ),
+              home: const PhoneLoginScreen(),
+            );
+          }
+        }
+        
+        // 1. شاشة تسجيل الدخول برقم الهاتف ورمز التأكيد
+        class PhoneLoginScreen extends StatefulWidget {
+          const PhoneLoginScreen({super.key});
+          @override
+          State<PhoneLoginScreen> createState() => _PhoneLoginScreenState();
+        }
+        
+        class _PhoneLoginScreenState extends State<PhoneLoginScreen> {
+          final _phoneController = TextEditingController();
+          final _codeController = TextEditingController();
+          bool _isCodeSent = false;
+          
+          @override
+          Widget build(BuildContext context) {
+            return Scaffold(
+              body: Padding(
+                padding: const EdgeInsets.all(24.0),
+                child: Center(
+                  child: SingleChildScrollView(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(Icons.chat_bubble, size: 80, color: Color(0xFF25D366)),
+                        const SizedBox(height: 20),
+                        const Text('Wats up jwad', style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.white)),
+                        const Text('تطوير جواد jwad', style: TextStyle(color: Color(0xFF25D366), fontSize: 16)),
+                        const SizedBox(height: 40),
+                        if (!_isCodeSent) ...[
+                          TextField(
+                            controller: _phoneController,
+                            keyboardType: TextInputType.phone,
+                            style: const TextStyle(color: Colors.white),
+                            decoration: InputDecoration(
+                              hintText: 'أدخل رقم الهاتف الحقيقي (مع رمز الدولة)...',
+                              prefixIcon: const Icon(Icons.phone, color: Color(0xFF25D366)),
+                              enabledBorder: OutlineInputBorder(borderSide: const BorderSide(color: Colors.grey), borderRadius: BorderRadius.circular(10)),
+                              focusedBorder: OutlineInputBorder(borderSide: const BorderSide(color: Color(0xFF25D366)), borderRadius: BorderRadius.circular(10)),
+                            ),
+                          ),
+                          const SizedBox(height: 20),
+                          SizedBox(
+                            width: double.infinity,
+                            height: 50,
+                            child: ElevatedButton(
+                              style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF25D366)),
+                              onPressed: () {
+                                if (_phoneController.text.isNotEmpty) {
+                                  setState(() { _isCodeSent = true; });
+                                }
+                              },
+                              child: const Text('إرسال رمز التأكيد SMS', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+                            ),
+                          ),
+                        ] else ...[
+                          TextField(
+                            controller: _codeController,
+                            keyboardType: TextInputType.number,
+                            style: const TextStyle(color: Colors.white),
+                            decoration: InputDecoration(
+                              hintText: 'أدخل رمز التأكيد المكون من 6 أرقام...',
+                              prefixIcon: const Icon(Icons.lock, color: Color(0xFF25D366)),
+                              enabledBorder: OutlineInputBorder(borderSide: const BorderSide(color: Colors.grey), borderRadius: BorderRadius.circular(10)),
+                              focusedBorder: OutlineInputBorder(borderSide: const BorderSide(color: Color(0xFF25D366)), borderRadius: BorderRadius.circular(10)),
+                            ),
+                          ),
+                          const SizedBox(height: 20),
+                          SizedBox(
+                            width: double.infinity,
+                            height: 50,
+                            child: ElevatedButton(
+                              style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF00A884)),
+                              onPressed: () {
+                                Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const HomeScreen()));
+                              },
+                              child: const Text('تأكيد وتسجيل الدخول', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            );
+          }
+        }
+
+        // 2. الشاشة الرئيسية متضمنة تبويب الحالات والمحادثات وإضافة الأرقام
+        class HomeScreen extends StatelessWidget {
+          const HomeScreen({super.key});
+          @override
+          Widget build(BuildContext context) {
+            return DefaultTabController(
+              length: 3,
+              child: Scaffold(
+                appBar: AppBar(
+                  backgroundColor: const Color(0xFF1F2C34),
+                  title: const Text('Wats up jwad', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                  actions: [
+                    IconButton(icon: const Icon(Icons.search, color: Colors.white), onPressed: () {}),
+                    IconButton(
+                      icon: const Icon(Icons.more_vert, color: Colors.white),
+                      onPressed: () {
+                        Navigator.push(context, MaterialPageRoute(builder: (context) => const SettingsScreen()));
+                      },
+                    ),
+                  ],
+                  bottom: const TabBar(
+                    indicatorColor: Color(0xFF00A884),
+                    labelColor: Color(0xFF00A884),
+                    unselectedLabelColor: Colors.grey,
+                    tabs: [
+                      Tab(text: 'المحادثات'),
+                      Tab(text: 'الحالات'),
+                      Tab(text: 'المكالمات'),
+                    ],
+                  ),
+                ),
+                body: TabBarView(
+                  children: [
+                    // تبويب المحادثات
+                    ListView.builder(
+                      itemCount: 2,
+                      itemBuilder: (context, index) {
+                        final names = ['أحمد (واتساب الأصلي)', 'صديق آخر'];
+                        return ListTile(
+                          leading: const CircleAvatar(backgroundColor: Colors.grey, child: Icon(Icons.person, color: Colors.white)),
+                          title: Text(names[index], style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                          subtitle: const Text('الرسائل متصلة برقمك الحقيقي...', style: TextStyle(color: Colors.grey)),
+                          trailing: const Text('٠٢:٣٠ ص', style: TextStyle(color: Colors.grey, fontSize: 12)),
+                          onTap: () {
+                            Navigator.push(context, MaterialPageRoute(builder: (context) => ChatScreen(name: names[index])));
+                          },
+                        );
+                      },
+                    ),
+                    // تبويب الحالات (مثل واتساب تماماً)
+                    ListView(
+                      padding: const EdgeInsets.all(16),
+                      children: [
+                        ListTile(
+                          leading: Stack(
+                            children: [
+                              const CircleAvatar(radius: 25, backgroundColor: Colors.grey, child: Icon(Icons.person, color: Colors.white)),
+                              Positioned(bottom: 0, right: 0, child: Container(decoration: const BoxDecoration(color: Color(0xFF00A884), shape: BoxShape.circle), child: const Icon(Icons.add, size: 18, color: Colors.white))),
+                            ],
+                          ),
+                          title: const Text('حالتي', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                          subtitle: const Text('انقر لإضافة تحديث حالة', style: TextStyle(color: Colors.grey)),
+                        ),
