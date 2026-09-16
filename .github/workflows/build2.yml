@@ -1,0 +1,220 @@
+name: Build Android APK
+on:
+  push:
+    branches: [ main, master, jwad ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v4
+
+    - name: Set up JDK 17
+      uses: actions/setup-java@v4
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+
+    - name: Setup Flutter
+      uses: subosito/flutter-action@v2
+      with:
+        flutter-version: '3.19.0'
+        channel: 'stable'
+
+    - name: Create App
+      run: |
+        flutter create --project-name whatsapp_jwad my_app
+        cd my_app
+        
+        cat << 'EOF' > lib/main.dart
+        import 'package:flutter/material.dart';
+        
+        void main() {
+          runApp(const WhatsAppJwad());
+        }
+        
+        class WhatsAppJwad extends StatelessWidget {
+          const WhatsAppJwad({super.key});
+          @override
+          Widget build(BuildContext context) {
+            return MaterialApp(
+              title: 'واتساب jwad',
+              debugShowCheckedModeBanner: false,
+              theme: ThemeData(
+                primaryColor: const Color(0xFF075E54),
+                scaffoldBackgroundColor: const Color(0xFF121B22),
+                colorScheme: ColorScheme.fromSeed(
+                  seedColor: const Color(0xFF075E54),
+                  background: const Color(0xFF121B22),
+                ),
+              ),
+              home: const LoginScreen(),
+            );
+          }
+        }
+        
+        // 1. شاشة تسجيل الدخول
+        class LoginScreen extends StatelessWidget {
+          const LoginScreen({super.key});
+          @override
+          Widget build(BuildContext context) {
+            return Scaffold(
+              body: Padding(
+                padding: const EdgeInsets.all(24.0),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(Icons.chat_bubble, size: 80, color: Color(0xFF25D366)),
+                    const SizedBox(height: 20),
+                    const Text('مرحباً بك في واتساب jwad', style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold)),
+                    const SizedBox(height: 10),
+                    const Text('تطوير جواد', style: TextStyle(color: Color(0xFF25D366), fontSize: 16)),
+                    const SizedBox(height: 40),
+                    TextField(
+                      style: const TextStyle(color: Colors.white),
+                      decoration: InputDecoration(
+                        hintText: 'أدخل رقم الهاتف...',
+                        hintStyle: const TextStyle(color: Colors.grey),
+                        prefixIcon: const Icon(Icons.phone, color: Color(0xFF25D366)),
+                        enabledBorder: OutlineInputBorder(borderSide: const BorderSide(color: Colors.grey)),
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    SizedBox(
+                      width: double.infinity,
+                      height: 50,
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF25D366)),
+                        onPressed: () {
+                          Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const HomeScreen()));
+                        },
+                        child: const Text('تسجيل الدخول', style: TextStyle(color: Colors.white, fontSize: 16)),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          }
+        }
+
+        // 2. الشاشة الرئيسية
+        class HomeScreen extends StatelessWidget {
+          const HomeScreen({super.key});
+          @override
+          Widget build(BuildContext context) {
+            return DefaultTabController(
+              length: 3,
+              child: Scaffold(
+                appBar: AppBar(
+                  backgroundColor: const Color(0xFF1F2C34),
+                  title: const Text('واتساب jwad', style: TextStyle(color: Colors.grey, fontWeight: FontWeight.bold)),
+                  actions: [
+                    IconButton(icon: const Icon(Icons.search, color: Colors.grey), onPressed: () {}),
+                    IconButton(
+                      icon: const Icon(Icons.more_vert, color: Colors.grey),
+                      onPressed: () {
+                        // فتح شاشة الإعدادات عند الضغط على النقاط الثلاثة
+                        Navigator.push(context, MaterialPageRoute(builder: (context) => const SettingsScreen()));
+                      },
+                    ),
+                  ],
+                  bottom: const TabBar(
+                    indicatorColor: Color(0xFF00A884),
+                    labelColor: Color(0xFF00A884),
+                    unselectedLabelColor: Colors.grey,
+                    tabs: [
+                      Tab(text: 'المحادثات'),
+                      Tab(text: 'المستجدات'),
+                      Tab(text: 'المكالمات'),
+                    ],
+                  ),
+                ),
+                body: ListView.builder(
+                  itemCount: 3,
+                  itemBuilder: (context, index) {
+                    return ListTile(
+                      leading: const CircleAvatar(backgroundColor: Colors.grey, child: Icon(Icons.person, color: Colors.white)),
+                      title: Text('جهة اتصال واتساب ${index + 1}', style: const TextStyle(color: Colors.white)),
+                      subtitle: const Text('متصل عبر بوابة jwad...', style: TextStyle(color: Colors.grey)),
+                      trailing: const Text('١٢:٠٠ م', style: TextStyle(color: Colors.grey, fontSize: 12)),
+                    );
+                  },
+                ),
+              ),
+            );
+          }
+        }
+
+        // 3. شاشة الإعدادات المخصصة لجواد مع الصورة والاسم
+        class SettingsScreen extends StatelessWidget {
+          const SettingsScreen({super.key});
+          @override
+          Widget build(BuildContext context) {
+            return Scaffold(
+              appBar: AppBar(
+                backgroundColor: const Color(0xFF1F2C34),
+                title: const Text('الإعدادات', style: TextStyle(color: Colors.white)),
+                iconTheme: const IconThemeData(color: Colors.white),
+              ),
+              body: ListView(
+                children: [
+                  const SizedBox(height: 20),
+                  // كرت الملف الشخصي الخاص بالمطور جواد وصورته الشخصية
+                  ListTile(
+                    leading: const CircleAvatar(
+                      radius: 35,
+                      // وضع رابط الصورة هنا لتعرض مباشرة بداخل التطبيق
+                      backgroundImage: NetworkImage('https://images.com'),
+                      backgroundColor: Color(0xFF1F2C34),
+                    ),
+                    title: const Text(
+                      'تطوير jwad',
+                      style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
+                    ),
+                    subtitle: const Text(
+                      'المطور المالك والمصمم للتطبيق',
+                      style: TextStyle(color: Color(0xFF25D366), fontSize: 14),
+                    ),
+                  ),
+                  const Divider(color: Colors.grey),
+                  const ListTile(
+                    leading: Icon(Icons.key, color: Colors.grey),
+                    title: Text('الحساب', style: TextStyle(color: Colors.white)),
+                    subtitle: Text('الخصوصية، أمان الرقم الخاص بك', style: TextStyle(color: Colors.grey)),
+                  ),
+                  const ListTile(
+                    leading: Icon(Icons.chat, color: Colors.grey),
+                    title: Text('المحادثات', style: TextStyle(color: Colors.white)),
+                    subtitle: Text('المظهر، الخلفيات، سجلات الدردشة', style: TextStyle(color: Colors.grey)),
+                  ),
+                  const ListTile(
+                    leading: Icon(Icons.notifications, color: Colors.grey),
+                    title: Text('الإشعارات', style: TextStyle(color: Colors.white)),
+                    subtitle: Text('نغمات الرسائل والمجموعات', style: TextStyle(color: Colors.grey)),
+                  ),
+                  const ListTile(
+                    leading: Icon(Icons.help_outline, color: Colors.grey),
+                    title: Text('المساعدة', style: TextStyle(color: Colors.white)),
+                    subtitle: Text('مركز المساعدة، اتصل بنا، سياسة الخصوصية', style: TextStyle(color: Colors.grey)),
+                  ),
+                ],
+              ),
+            );
+          }
+        }
+        EOF
+
+    - name: Build APK
+      run: |
+        cd my_app
+        flutter build apk --release
+
+    - name: Upload APK
+      uses: actions/upload-artifact@v4
+      with:
+        name: whatsapp-jwad-apk
+        path: my_app/build/app/outputs/flutter-apk/app-release.apk
+        
